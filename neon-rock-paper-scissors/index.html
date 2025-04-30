@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Taş Kağıt Makas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.0/gsap.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    animation: {
+                        'neon-pulse': 'neon-pulse 1.5s ease-in-out infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    },
+                    keyframes: {
+                        'neon-pulse': {
+                            '0%, 100%': {
+                                textShadow: '0 0 7px #fff, 0 0 10px #fff, 0 0 21px #fff, 0 0 42px #5271ff, 0 0 82px #5271ff, 0 0 92px #5271ff, 0 0 102px #5271ff, 0 0 151px #5271ff'
+                            },
+                            '50%': {
+                                textShadow: '0 0 4px #fff, 0 0 7px #fff, 0 0 13px #fff, 0 0 25px #5271ff, 0 0 50px #5271ff, 0 0 60px #5271ff, 0 0 70px #5271ff, 0 0 100px #5271ff'
+                            }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .cyber-bg {
+            background: linear-gradient(45deg, #000428, #004e92);
+            min-height: 100vh;
+        }
+        .neon-border {
+            position: relative;
+            background: rgba(0, 0, 0, 0.7);
+        }
+        .neon-border::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #5271ff, #00ffff);
+            z-index: -1;
+            filter: blur(5px);
+            border-radius: inherit;
+        }
+        .choice-btn {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+            width: 100%;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .choice-icon {
+            font-size: 4rem;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+        .choice-btn:hover {
+            transform: translateY(-10px) scale(1.1);
+        }
+        .choice-btn:active {
+            transform: scale(0.95);
+        }
+        .result-text {
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.3s ease;
+        }
+        .result-text.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .score-number {
+            text-shadow: 0 0 10px rgba(82, 113, 255, 0.8);
+        }
+        .versus-animation {
+            animation: versus-pulse 1s ease-in-out infinite;
+        }
+        @keyframes versus-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        .winner-glow {
+            animation: winner-glow 1s ease-in-out;
+        }
+        @keyframes winner-glow {
+            0% { box-shadow: 0 0 0 rgba(82, 113, 255, 0); }
+            50% { box-shadow: 0 0 30px rgba(82, 113, 255, 0.8); }
+            100% { box-shadow: 0 0 0 rgba(82, 113, 255, 0); }
+        }
+        .game-choice {
+            font-size: 5rem;
+            line-height: 1;
+        }
+    </style>
+</head>
+<body class="cyber-bg text-white">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <h1 class="text-5xl font-bold text-center mb-12 animate-neon-pulse">
+            Taş Kağıt Makas
+        </h1>
+
+        <!-- Score Board -->
+        <div class="flex justify-center gap-8 mb-12">
+            <div class="neon-border p-6 rounded-xl">
+                <p class="text-xl mb-2">Oyuncu</p>
+                <p class="text-4xl font-bold score-number" id="playerScore">0</p>
+            </div>
+            <div class="neon-border p-6 rounded-xl">
+                <p class="text-xl mb-2">Bilgisayar</p>
+                <p class="text-4xl font-bold score-number" id="computerScore">0</p>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="max-w-4xl mx-auto">
+            <!-- Result Display -->
+            <div class="text-center mb-12">
+                <p class="text-3xl font-bold result-text" id="resultText">Seçimini Yap!</p>
+            </div>
+
+            <!-- Battle Area -->
+            <div class="grid grid-cols-3 gap-8 items-center mb-12">
+                <!-- Player Choice -->
+                <div class="text-center">
+                    <div id="playerChoice" class="game-choice mb-4">❔</div>
+                    <p class="text-xl">Senin Seçimin</p>
+                </div>
+
+                <!-- VS -->
+                <div class="text-6xl text-center versus-animation">VS</div>
+
+                <!-- Computer Choice -->
+                <div class="text-center">
+                    <div id="computerChoice" class="game-choice mb-4">❔</div>
+                    <p class="text-xl">Bilgisayarın Seçimi</p>
+                </div>
+            </div>
+
+            <!-- Choice Buttons -->
+            <div class="grid grid-cols-3 gap-6">
+                <button class="choice-btn neon-border rounded-xl" onclick="play('rock')">
+                    <div class="choice-icon">🗿</div>
+                    <p class="text-xl">Taş</p>
+                </button>
+                <button class="choice-btn neon-border rounded-xl" onclick="play('paper')">
+                    <div class="choice-icon">📄</div>
+                    <p class="text-xl">Kağıt</p>
+                </button>
+                <button class="choice-btn neon-border rounded-xl" onclick="play('scissors')">
+                    <div class="choice-icon">✂️</div>
+                    <p class="text-xl">Makas</p>
+                </button>
+            </div>
+
+            <!-- Reset Button -->
+            <div class="text-center mt-8">
+                <button onclick="resetGame()" class="neon-border px-8 py-4 rounded-xl hover:scale-105 transition-transform">
+                    Oyunu Sıfırla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let playerScore = 0;
+        let computerScore = 0;
+        const choices = {
+            rock: '🗿',
+            paper: '📄',
+            scissors: '✂️'
+        };
+
+        function play(playerChoice) {
+            // Seçimleri göster
+            const playerChoiceElement = document.getElementById('playerChoice');
+            playerChoiceElement.textContent = choices[playerChoice];
+            playerChoiceElement.classList.add('winner-glow');
+
+            // Bilgisayar seçimini yap
+            const computerChoice = getComputerChoice();
+            const computerChoiceElement = document.getElementById('computerChoice');
+            
+            // Animasyon efekti için kısa bir gecikme
+            setTimeout(() => {
+                computerChoiceElement.textContent = choices[computerChoice];
+                computerChoiceElement.classList.add('winner-glow');
+
+                // Kazananı belirle
+                const result = getWinner(playerChoice, computerChoice);
+                updateScore(result);
+                showResult(result, playerChoice, computerChoice);
+
+                // Animasyonları temizle
+                setTimeout(() => {
+                    playerChoiceElement.classList.remove('winner-glow');
+                    computerChoiceElement.classList.remove('winner-glow');
+                }, 1000);
+            }, 500);
+        }
+
+        function getComputerChoice() {
+            const choices = ['rock', 'paper', 'scissors'];
+            return choices[Math.floor(Math.random() * choices.length)];
+        }
+
+        function getWinner(player, computer) {
+            if (player === computer) return 'draw';
+            
+            if (
+                (player === 'rock' && computer === 'scissors') ||
+                (player === 'paper' && computer === 'rock') ||
+                (player === 'scissors' && computer === 'paper')
+            ) {
+                return 'win';
+            }
+            
+            return 'lose';
+        }
+
+        function updateScore(result) {
+            if (result === 'win') playerScore++;
+            if (result === 'lose') computerScore++;
+            
+            document.getElementById('playerScore').textContent = playerScore;
+            document.getElementById('computerScore').textContent = computerScore;
+
+            // Skor animasyonu
+            gsap.from(['#playerScore', '#computerScore'], {
+                scale: 1.5,
+                duration: 0.5,
+                ease: 'elastic.out(1, 0.3)'
+            });
+        }
+
+        function showResult(result, playerChoice, computerChoice) {
+            const resultText = document.getElementById('resultText');
+            let message = '';
+            let color = '';
+
+            switch (result) {
+                case 'win':
+                    message = 'Kazandın! 🎉';
+                    color = '#4ade80'; // yeşil
+                    break;
+                case 'lose':
+                    message = 'Kaybettin! 😢';
+                    color = '#ef4444'; // kırmızı
+                    break;
+                case 'draw':
+                    message = 'Berabere! 🤝';
+                    color = '#3b82f6'; // mavi
+                    break;
+            }
+
+            resultText.textContent = message;
+            resultText.style.color = color;
+            
+            // Sonuç animasyonu
+            resultText.classList.remove('active');
+            void resultText.offsetWidth; // reflow
+            resultText.classList.add('active');
+        }
+
+        function resetGame() {
+            playerScore = 0;
+            computerScore = 0;
+            document.getElementById('playerScore').textContent = '0';
+            document.getElementById('computerScore').textContent = '0';
+            document.getElementById('playerChoice').textContent = '❔';
+            document.getElementById('computerChoice').textContent = '❔';
+            document.getElementById('resultText').textContent = 'Seçimini Yap!';
+            document.getElementById('resultText').style.color = 'white';
+
+            // Reset animasyonu
+            gsap.from(['#playerScore', '#computerScore'], {
+                scale: 0,
+                duration: 0.5,
+                ease: 'back.out(1.7)'
+            });
+        }
+
+        // Sayfa yüklendiğinde GSAP animasyonları
+        gsap.from('h1', {
+            y: -100,
+            opacity: 0,
+            duration: 1,
+            ease: 'elastic.out(1, 0.3)'
+        });
+
+        gsap.from('.choice-btn', {
+            scale: 0,
+            opacity: 0,
+            duration: 0.5,
+            stagger: 0.1,
+            ease: 'back.out(1.7)'
+        });
+    </script>
+</body>
+</html>
